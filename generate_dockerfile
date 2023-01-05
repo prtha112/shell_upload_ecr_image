@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+template=$(cat template)
+
+if [ "$1" == "--help" ] ; then
+	helps="This generate dockerfile golang V1.0.0\n
+-v golang version exmaple : 1.19.2 \n
+-h ecr host example : 457426870433.dkr.ecr.ap-southeast-1.amazonaws.com/devops/golang \n
+	"
+    	echo -e $helps
+    	exit 0
+fi
+
+while getopts v:h: flag
+do
+    	case "${flag}" in
+		v) version=${OPTARG};;
+		h) hostname=${OPTARG};;
+    	esac
+done
+
+if [ -z $hostname ] || [ -z $version ] ; then
+	echo "Please fill hostname or version."
+	exit 
+fi
+
+if [ "${template}" == "" ] ; then
+	echo "Please have template file."
+	exit 
+fi
+
+docker_login() {
+	aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin $hostname
+}
+
+docker_buildx_push() {
+	docker buildx create --use
+	docker buildx build --platform linux/amd64,linux/arm64 -f "${version}.Dockerfile" -t "${hostname}:${version}" --push .
+}
+
+[[ -f "${version}.Dockerfile" ]] || touch "${version}.Dockerfile"
+echo -e "FROM golang:${version}\n" > "${version}.Dockerfile"
+awk 'FNR==1{print ""}1' template  >> "${version}.Dockerfile"
+
+docker_login
+docker_buildx_push
