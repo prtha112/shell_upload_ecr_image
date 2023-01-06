@@ -8,7 +8,7 @@ template=$(cat template)
 if [ "$1" == "--help" ] ; then
 	helps="This generate dockerfile golang V1.0.0\n
 -v golang version exmaple : 1.19.2 \n
--h ecr host example : 457426870433.dkr.ecr.ap-southeast-1.amazonaws.com/devops/golang \n
+-h ecr host example : xxxxxxxx.dkr.ecr.ap-southeast-1.amazonaws.com/devops/golang \n
 	"
     	echo -e $helps
     	exit 0
